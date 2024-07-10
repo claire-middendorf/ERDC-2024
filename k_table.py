@@ -3,7 +3,7 @@
 """
 Claire Middendorf
 
-    Required, constant data structures for analysis
+    Required, constant data structures for Log-Pearson Type III analysis
 
 """
 
