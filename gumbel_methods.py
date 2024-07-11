@@ -24,7 +24,7 @@ def process_peakflow_data(data=pd.DataFrame):
     return data
 
 
-def gumbel_stats(data=pd.DataFrame):
+def gumbel_stats(data=pd.DataFrame, return_periods=list):
     """add additional statistics; returns two structures"""
 
     # statistics
