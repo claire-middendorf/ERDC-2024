@@ -11,9 +11,9 @@ Claire Middendorf
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import pandas as pd
-import log-pearson-analysis as lp
+import log_pearson_analysis as lp
 import k_table as kdata
-import gumbel-analysis as gb
+import gumbel_analysis as gb
 
 # globals
 INPUT = './src/jc_station.csv'
