@@ -3,7 +3,7 @@
 """
 Claire Middendorf
 
-    Process Log-Pearson Type III flood frequency analysis
+    Process Log-Pearson Type III or Gumbel flood frequency analysis 
 
 """
 
