@@ -4,6 +4,7 @@
 Claire Middendorf
 
     Process Log-Pearson Type III or Gumbel flood frequency analysis 
+    Produces hydrographs after each analysis
 
 """
 
@@ -163,21 +164,14 @@ else:
             
         peakflow = process_peakflow_data(peak_flow_df)
         
-        data, floods = gumbel_stats(peakflow)
+        data, floods = gumbel_stats(peakflow,return_periods)
         
         # step 6 - visualization
-        unit_hydro = pd.read_csv('/Users/clairemiddendorf/Desktop/USACE Internship/flood_python/hydrograph.csv') 
-        interval = 2
-            
-        hydrograph = pd.DataFrame()
-            
-        hydrograph['t'] = unit_hydro['t/tp'].apply(lambda x: (x * interval)) 
-        
         count = 0 
         length = len(floods.index)
         while count < length:
-            hydrograph[str(floods.loc[count,'Return Periods']) +'-year Flood'] = unit_hydro['q/qp'].apply(
-            lambda x: (x * floods.loc[count,'Peak Streamflow (cfs)']))
+            hydrograph[str(floods.iloc[count,1]) +'-year Flood'] = unit_hydro['q/qp'].apply(
+            lambda x: (x * floods.iloc[count,2]))
             count = count+1
                 
         # Create a line chart
@@ -186,7 +180,7 @@ else:
         count = 1
         length2 = len(hydrograph.columns)
         while count < length:   
-            plt.plot(hydrograph['t'], hydrograph.iloc[:,count], linestyle='-', label=str(floods.loc[count,'Return Periods']) +'-year Flood')
+            plt.plot(hydrograph['t'], hydrograph.iloc[:,count], linestyle='-', label=str(floods.iloc[count,1]) +'-year Flood')
             count = count+1
                     
             
