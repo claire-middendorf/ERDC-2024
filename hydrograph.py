@@ -16,9 +16,13 @@ floods = 'floods.csv' #a file with return periods and peak streamflows
 flood_duration = 58 #desired duration of flood (days)
 base_flow = 50714 #base flow of river
 HYDRO = 'hydrograph.csv' #unit hydrograph csv file
-return_periods = [1.01,2,5,10,25,50,100] #desired return periods for Gumbel Method
+
 
 def main():
+    
+        flood_df = pd.read_csv(floods,
+                                   header=None,
+                                   names=['Returmn Period', 'peak_streamflow'])
 
         unit_hydro = pd.read_csv(HYDRO) 
         interval = flood_duration/5
@@ -28,10 +32,10 @@ def main():
         hydrograph['t'] = unit_hydro['t/tp'].apply(lambda x: (x * interval)) 
         
         count = 0 
-        length = len(floods.index)
+        length = len(flood_df.index)
         while count < length:
-            hydrograph[str(floods.iloc[count,1]) +'-year Flood'] = unit_hydro['q/qp'].apply(
-            lambda x: (x * floods.iloc[count,2]))
+            hydrograph[str(flood_df.iloc[count,0]) +'-year Flood'] = unit_hydro['q/qp'].apply(
+            lambda x: (x * flood_df.iloc[count,1]))
             count = count+1
         
         pd.set_option('display.max_columns', None)
