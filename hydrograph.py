@@ -16,6 +16,7 @@ floods = 'floods.csv' #a file with return periods and peak streamflows
 flood_duration = 58 #desired duration of flood (days)
 base_flow = 50714 #base flow of river
 HYDRO = 'hydrograph.csv' #unit hydrograph csv file
+INVERSE = 'reverse.csv'
 
 
 def main():
@@ -24,48 +25,61 @@ def main():
                                    header=None,
                                    names=['Returmn Period', 'peak_streamflow'])
 
-        unit_hydro = pd.read_csv(HYDRO) 
-        interval = flood_duration/5
-            
+        unit_hydro = pd.read_csv(HYDRO)
+        inverse = pd.read_csv(INVERSE, header = None, names = ['qp'])
+        inverse['base_flow_adds'] = inverse['qp'].apply(lambda x: x*base_flow)
+    
         hydrograph = pd.DataFrame()
-            
-        hydrograph['t'] = unit_hydro['t/tp'].apply(lambda x: (x * interval)) 
+        
+        interval = flood_duration/5
+        hydrograph['t'] = unit_hydro['t/tp'].apply(lambda x: (x * interval))
         
         count = 0 
-        length = len(flood_df.index)
+        length = len(flood_df)
         while count < length:
             hydrograph[str(flood_df.iloc[count,0]) +'-year Flood'] = unit_hydro['q/qp'].apply(
             lambda x: (x * flood_df.iloc[count,1]))
             count = count+1
         
-        pd.set_option('display.max_columns', None)
-        display(hydrograph)
+        #adds base flow to hydrograph
+        j = 1
+        row_list = range(0,len(hydrograph)-1,1)
+        while j != len(hydrograph.columns):
+            for i in row_list:
+                hydrograph.iloc[i,j]= hydrograph.iloc[i,j] + base_flow*inverse.iloc[i,0]
+                
+            j = j+1
+                
+        last_row = len(hydrograph) - 1
+        hydrograph.iloc[last_row,1:] = base_flow
         
+        display(hydrograph)
         
         # Create a line chart
         fig, ax = plt.subplots()
         
         palette=sns.color_palette(palette='Blues_d')
         
-        count = 1
+        count = 0
         while count < length:   
-            plt.plot(hydrograph['t'], hydrograph.iloc[:,count], color = random.choice(palette),linestyle='-', label=str(floods.iloc[count,1]) +'-year Flood')
+            plt.plot(hydrograph['t'], hydrograph.iloc[:,count+1], color = random.choice(palette),linestyle='-', label=str(flood_df.iloc[count,0]) +'-year Flood')
             count = count+1
                     
             
-        # Add title and labels
+         # Add title and labels
         plt.title('Hydrograph')
-        plt.xlabel('Time (days)')
+        plt.xlabel('Time (Days)')
         plt.ylabel('Flow Rate (cfs)')
         ax.yaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.0f}'))
-            
-        # Display grid
+         
+         
+         # Display grid
         plt.grid(True)
-            
+             
         plt.legend(loc='best')
         plt.tight_layout()
-            
-        # Show the plot
+             
+         # Show the plot
         plt.show()
 
 
