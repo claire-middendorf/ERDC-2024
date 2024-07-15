@@ -22,10 +22,11 @@ import random
 # globals
 INPUT = 'station_rulo.csv' #csv file with peak streamflow data
 REGIONAL_SKEW = -0.3 #regional skew for river station (use map image) for Log-Pearson
-flood_duration = 58 #desired duration of flood (days)
+flood_duration = 57.9 #desired duration of flood (days)
 base_flow = 50714 #base flow of river
 HYDRO = 'hydrograph.csv' #unit hydrograph csv file
-return_periods = [1.01,2,5,10,25,50,100] #desired return periods for Gumbel Method
+return_periods = [5,10,25,50] #desired return periods for Gumbel Method
+INVERSE = 'reverse.csv'
 
 #flood frequency analysis: Write 1 for Log-Pearson Type III or 2 for Gumbel
 method = 1
@@ -110,8 +111,9 @@ def main():
 
         # step 6 - visualization
         unit_hydro = pd.read_csv(HYDRO)
+        inverse = pd.read_csv(INVERSE, header = None, names = ['qp'])
+        inverse['base_flow_adds'] = inverse['qp'].apply(lambda x: x*base_flow)
         
-    
         hydrograph = pd.DataFrame()
         
         interval = flood_duration/5
@@ -119,22 +121,34 @@ def main():
         
         
         hydrograph['1-year'] = unit_hydro['q/qp'].apply(
-            lambda x: (x * ff_results['One-Year Flood']) + base_flow)
+            lambda x: (x * ff_results['One-Year Flood']))
         hydrograph['2-year'] = unit_hydro['q/qp'].apply(
-            lambda x: (x * ff_results['Two-Year Flood'])+ base_flow)
+            lambda x: (x * ff_results['Two-Year Flood']))
         hydrograph['5-year'] = unit_hydro['q/qp'].apply(
-            lambda x: (x * ff_results['Five-Year Flood'])+ base_flow)
+            lambda x: (x * ff_results['Five-Year Flood']))
         hydrograph['10-year'] = unit_hydro['q/qp'].apply(
-            lambda x: (x * ff_results['Ten-Year Flood'])+ base_flow)
+            lambda x: (x * ff_results['Ten-Year Flood']))
         hydrograph['25-year'] = unit_hydro['q/qp'].apply(
-            lambda x: (x * ff_results['Twenty-five-Year Flood'])+ base_flow)
+            lambda x: (x * ff_results['Twenty-five-Year Flood']))
         hydrograph['50-year'] = unit_hydro['q/qp'].apply(
-            lambda x: (x * ff_results['Fifty-Year Flood'])+ base_flow)
+            lambda x: (x * ff_results['Fifty-Year Flood']))
         hydrograph['100-year'] = unit_hydro['q/qp'].apply(
-            lambda x: (x * ff_results['Hundred-Year Flood'])+ base_flow)
+            lambda x: (x * ff_results['Hundred-Year Flood']))
         hydrograph['200-year'] = unit_hydro['q/qp'].apply(
-            lambda x: (x * ff_results['Two Hundred-Year Flood'])+ base_flow)
+            lambda x: (x * ff_results['Two Hundred-Year Flood']))
     
+        #adds base flow to hydrograph
+        j = 1
+        row_list = range(0,len(hydrograph)-1,1)
+        while j != len(hydrograph.columns):
+            for i in row_list:
+                hydrograph.iloc[i,j]= hydrograph.iloc[i,j] + base_flow*inverse.iloc[i,0]
+                
+            j = j+1
+                
+        last_row = len(hydrograph) - 1
+        hydrograph.iloc[last_row,1:] = base_flow
+        
         display(hydrograph)
         
         
@@ -182,7 +196,8 @@ def main():
         
         # step 6 - visualization
         unit_hydro = pd.read_csv(HYDRO)
-        
+        inverse = pd.read_csv(INVERSE, header = None, names = ['qp'])
+        inverse['base_flow_adds'] = inverse['qp'].apply(lambda x: x*base_flow)
     
         hydrograph = pd.DataFrame()
         
@@ -193,20 +208,36 @@ def main():
         length = len(floods.index)
         while count < length:
             hydrograph[str(floods.iloc[count,0]) +'-year Flood'] = unit_hydro['q/qp'].apply(
-            lambda x: (x * floods.iloc[count,1])+ base_flow)
+            lambda x: (x * floods.iloc[count,1]))
             count = count+1
         
+        #adds base flow to hydrograph
+        j = 1
+        row_list = range(0,len(hydrograph)-1,1)
+        while j != len(hydrograph.columns):
+            for i in row_list:
+                hydrograph.iloc[i,j]= hydrograph.iloc[i,j] + base_flow*inverse.iloc[i,0]
+                
+            j = j+1
+                
+        last_row = len(hydrograph) - 1
+        hydrograph.iloc[last_row,1:] = base_flow
+        
         display(hydrograph)
+      
         
         # Create a line chart
         fig, ax = plt.subplots()
         
         palette=sns.color_palette(palette='Blues_d')
         
-        count = 1
-        while count < length:   
-            plt.plot(hydrograph['t'], hydrograph.iloc[:,count], color = random.choice(palette), label=str(floods.iloc[count,0]) +'-year Flood')
-            count = count+1
+        count1 = 1
+        count2 = 0
+        length = len(hydrograph.columns)
+        while count1 < length:   
+            plt.plot(hydrograph['t'], hydrograph.iloc[:,count1], color = random.choice(palette), label=str(floods.iloc[count2,0]) +'-year Flood')
+            count1 = count1+1
+            count2 = count2+1
                     
             
         # Add title and labels
