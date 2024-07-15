@@ -76,12 +76,12 @@ def process_coefficients(skew_coeff: float, regional_skew: float,
     var_reg_skew = 0.302
 
     if skew_coeff <= 0.9:
-        a = -0.33 + 0.08 * skew_coeff
+        a = -0.33 + 0.08 * abs(skew_coeff)
     else:
-        a = -0.52 + 0.3 * skew_coeff
+        a = -0.52 + 0.3 * abs(skew_coeff)
 
     if skew_coeff <= 1.5:
-        b = 0.94 - 0.26 * skew_coeff
+        b = 0.94 - 0.26 * abs(skew_coeff)
     else:
         b = 0.55
 
@@ -146,42 +146,3 @@ class FrequencyFactors:
         return q_value
 
 
-def log_pearson_stats(data=pd.DataFrame):
-    """add additional statistics; returns two structures"""
-
-    n = len(data)
-
-    # log values and averages
-    data['Q_log10'] = np.log10(data['peak_streamflow'])
-    avg_Q = data["peak_streamflow"].mean()
-    avg_logQ = data['Q_log10'].mean()
-
-    # required calculations as new columns
-    data['(log Q - avg(logQ))^2'] = data['Q_log10'].apply(
-        lambda x: (x - avg_logQ) ** 2)
-    data['(log Q - avg(logQ))^3'] = data['Q_log10'].apply(
-        lambda x: (x - avg_logQ) ** 3)
-    data['Return Period (Tr)'] = data['rank'].apply(lambda x: (n + 1) / x)
-    data['Exceedance Probability'] = data['Return Period (Tr)'].apply(
-        lambda x: 1 / x)
-
-    # statistics
-    sum_squared = sum(data['(log Q - avg(logQ))^2'])
-    sum_cubed = sum(data['(log Q - avg(logQ))^3'])
-    stdev = np.std(data['Q_log10'], ddof=1)
-    variance = np.var(data['Q_log10'])
-
-    # Calculations of skew coefficients
-    skew_coeff = data['Q_log10'].skew()
-
-    peakflow_stats = {
-        'avg_Q': avg_Q,
-        'avg_logQ': avg_logQ,
-        'sum_squared': sum_squared,
-        'sum_cubed': sum_cubed,
-        'stdev': stdev,
-        'variance': variance,
-        'skew_coeff': skew_coeff,
-    }
-
-    return data, peakflow_stats
