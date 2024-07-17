@@ -11,7 +11,7 @@ flood_duration = desired duration of flood (days)
 
 base_flow = base flow of river; can be found using the USGS Baseflow Forecasts 
 
-return_periods = desired return periods for Gumbel Method  
+return_periods = desired return periods 
 
 A hydrograph is a graph showing the rate of flow versus time. In this case, it represents the flow rate during a flooding event predicted by a flood frequency analysis. The hydrograph Python file can create a hydrograph if you already have the return periods and the peak stream flows. A sample input file for this script is in the required files folder. (sample_hydrograph_input.csv)  
 
