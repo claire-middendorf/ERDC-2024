@@ -22,14 +22,15 @@ import seaborn as sns
 import random
 
 # globals
-INPUT = 'NEcity_station.csv' #csv file with peak streamflow data
+INPUT = 'station_rulo.csv' #csv file with peak streamflow data
 REGIONAL_SKEW = -0.3 #regional skew for river station (use map image) for Log-Pearson
-flood_duration = 41.2 #desired duration of flood (days)
-base_flow = 48422 #base flow of river
+flood_duration = 57.9 #desired duration of flood (days)
+base_flow = 50714 #base flow of river
 return_periods = [5,10,25,50] #desired return periods for Gumbel Method
 interval_min = 15 #desired output interval (ie flow every 15 minutes)
 
-interval_hr = round(interval_min/60,3) 
+interval_hr = interval_min/60
+interval_day = interval_hr/24
 
 #flood frequency analysis: Write 1 for Log-Pearson Type III or 2 for Gumbel
 method = 1
@@ -127,8 +128,21 @@ def main():
     
         hydrograph = pd.DataFrame()
         
-        interval = flood_duration/5
-        hydrograph['t'] = unit_hydro['t/tp'].apply(lambda x: (x * interval))
+        time_days = [0]
+        
+        for i in range(0,len(unit_hydro)):
+            val = time_days[i] + interval_day
+            time_days.append(val)
+        
+        time_minutes = [0]
+        
+        for i in range(0,len(unit_hydro)):
+            val = time_minutes[i] + interval_min
+            time_minutes.append(val)
+
+        hydrograph['Time (days)'] = time_days
+        
+        hydrograph['Time (minutes)'] = time_minutes
         
         count = 0 
         length = len(flood_df)
@@ -138,18 +152,19 @@ def main():
             count = count+1
         
         #adds base flow to hydrograph
-        j = 1
+        j = 2
         row_list = range(0,len(hydrograph)-1,1)
         while j != len(hydrograph.columns):
             for i in row_list:
-                hydrograph.iloc[i,j]= hydrograph.iloc[i,j] + base_flow*unit_baseflow.iloc[i,0]
+                hydrograph.iloc[i,j]= hydrograph.iloc[i,j] + base_flow*unit_baseflow.iloc[i,1]
                 
             j = j+1
                 
         last_row = len(hydrograph) - 1
-        hydrograph.iloc[last_row,1:] = base_flow
+        hydrograph.iloc[last_row,2:] = base_flow
         
         display(hydrograph)
+       
       
         
         # Create a line chart
@@ -157,11 +172,11 @@ def main():
         
         palette=sns.color_palette(palette='Blues_d')
         
-        count1 = 1
+        count1 = 2
         count2 = 0
         length = len(hydrograph.columns)
         while count1 < length:   
-            plt.plot(hydrograph['t'], hydrograph.iloc[:,count1], color = random.choice(palette), label=str(flood_df.iloc[count2,0]) +'-year Flood')
+            plt.plot(hydrograph['Time (days)'], hydrograph.iloc[:,count1], color = random.choice(palette), label=str(flood_df.iloc[count2,0]) +'-year Flood')
             count1 = count1+1
             count2 = count2+1
                     
@@ -198,12 +213,25 @@ def main():
         
         
         # step 6 - visualization
-        unit_hydro, unit_baseflow = hv.hydro_vals(flood_duration)
+        unit_hydro, unit_baseflow = hv.hydro_vals(flood_duration, interval_hr)
     
         hydrograph = pd.DataFrame()
         
-        interval = flood_duration/5
-        hydrograph['t'] = unit_hydro['t/tp'].apply(lambda x: (x * interval))
+        time_days = [0]
+        
+        for i in range(0,len(unit_hydro)):
+            val = time_days[i] + interval_day
+            time_days.append(val)
+        
+        time_minutes = [0]
+        
+        for i in range(0,len(unit_hydro)):
+            val = time_minutes[i] + interval_min
+            time_minutes.append(val)
+
+        hydrograph['Time (days)'] = time_days
+        
+        hydrograph['Time (minutes)'] = time_minutes
         
         count = 0 
         length = len(flood_df)
@@ -213,16 +241,16 @@ def main():
             count = count+1
         
         #adds base flow to hydrograph
-        j = 1
+        j = 2
         row_list = range(0,len(hydrograph)-1,1)
         while j != len(hydrograph.columns):
             for i in row_list:
-                hydrograph.iloc[i,j]= hydrograph.iloc[i,j] + base_flow*unit_baseflow.iloc[i,0]
+                hydrograph.iloc[i,j]= hydrograph.iloc[i,j] + base_flow*unit_baseflow.iloc[i,1]
                 
             j = j+1
                 
         last_row = len(hydrograph) - 1
-        hydrograph.iloc[last_row,1:] = base_flow
+        hydrograph.iloc[last_row,2:] = base_flow
         
         display(hydrograph)
        
@@ -232,28 +260,27 @@ def main():
         
         palette=sns.color_palette(palette='Blues_d')
         
-        count1 = 1
+        count1 = 2
         count2 = 0
         length = len(hydrograph.columns)
         while count1 < length:   
-            plt.plot(hydrograph['t'], hydrograph.iloc[:,count1], color = random.choice(palette), label=str(flood_df.iloc[count2,0]) +'-year Flood')
+            plt.plot(hydrograph['Time (days)'], hydrograph.iloc[:,count1], color = random.choice(palette), label=str(flood_df.iloc[count2,0]) +'-year Flood')
             count1 = count1+1
             count2 = count2+1
                     
-            
+        
         # Add title and labels
         plt.title('Hydrograph')
-        plt.xlabel('Time (Days)')
+        plt.xlabel('Time (days)')
         plt.ylabel('Flow Rate (cfs)')
         ax.yaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.0f}'))
-        
-        
+    
         # Display grid
         plt.grid(True)
-            
+    
         plt.legend(loc='best')
         plt.tight_layout()
-            
+    
         # Show the plot
         plt.show()
 
