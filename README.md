@@ -1,5 +1,5 @@
 # ERDC-2024
-I created this Python script to perform flood frequency analysis and then create hydrographs from those analyses.  
+I created this Python script to perform flood frequency analysis and then create hydrographs. 
 
 flood_frequency_interval.py file: The scripts can either perform a Log-Pearson Type 3 analysis or a Gumbel analysis. The script will then create a hydrograph for either of these analyses. There is an example of the input file required for this script in the required files folder (sample_FFA_input.csv). This data can be found using the USGS National Water Dashboard and going to the site page for the river station. 
 
